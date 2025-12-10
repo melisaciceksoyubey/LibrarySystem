@@ -48,7 +48,5 @@ public class Admin {
         kitap.setKitapAdi(yeniAd);
         kitap.setYazarAdi(yeniYazar);
     }
-
-    }
-
+}
 
