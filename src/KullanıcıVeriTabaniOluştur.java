@@ -42,4 +42,24 @@ public class KullanıcıVeriTabaniOluştur {
         }
         return liste;
     }
+    
+    public void kullaniciSil(int kullaniciId) {
+        String sql = "DELETE FROM kullanici WHERE kullaniciid = ?";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setInt(1, kullaniciId);
+            int sonuc = ps.executeUpdate();
+            
+            if (sonuc > 0) {
+                System.out.println("Kullanıcı başarıyla silindi. ID: " + kullaniciId);
+            } else {
+                System.out.println("Kullanıcı bulunamadı. ID: " + kullaniciId);
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

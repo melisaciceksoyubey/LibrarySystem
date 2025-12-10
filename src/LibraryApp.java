@@ -1,212 +1,344 @@
-import javafx.application.Application;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
-import javafx.stage.Stage;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import java.awt.*;
+import java.time.LocalDate;
+import java.util.List;
 
-public class LibraryApp extends Application {
-    private Stage primaryStage;
+public class LibraryApp extends JFrame {
     private AdminVeriTabaniOluştur adminDAO = new AdminVeriTabaniOluştur();
+    private CardLayout cardLayout;
+    private JPanel mainPanel;
 
-    @Override
-    public void start(Stage primaryStage) {
-        this.primaryStage = primaryStage;
-        primaryStage.setTitle("Kütüphane Yönetim Sistemi");
-        primaryStage.setScene(createLoginScene());
-        primaryStage.setResizable(false);
-        primaryStage.show();
+    public LibraryApp() {
+        setTitle("Kütüphane Yönetim Sistemi");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(1000, 700);
+        setLocationRelativeTo(null);
+
+        cardLayout = new CardLayout();
+        mainPanel = new JPanel(cardLayout);
+
+        mainPanel.add(createLoginPanel(), "LOGIN");
+        mainPanel.add(createAdminPanel(), "ADMIN");
+
+        add(mainPanel);
+        cardLayout.show(mainPanel, "LOGIN");
     }
 
-    private Scene createLoginScene() {
-        VBox root = new VBox(20);
-        root.setPadding(new Insets(40));
-        root.setAlignment(Pos.CENTER);
-        root.setStyle("-fx-background-color: #f5f5f5;");
+    private JPanel createLoginPanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(new Color(245, 245, 245));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
 
-        Label titleLabel = new Label("Kütüphane Yönetim Sistemi");
-        titleLabel.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+        // Başlık
+        JLabel titleLabel = new JLabel("Kütüphane Yönetim Sistemi");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 28));
+        titleLabel.setForeground(new Color(44, 62, 80));
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        panel.add(titleLabel, gbc);
 
-        Label subtitleLabel = new Label("Giriş Yapın");
-        subtitleLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #7f8c8d;");
+        // Alt başlık
+        JLabel subtitleLabel = new JLabel("Giriş Yapın");
+        subtitleLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        subtitleLabel.setForeground(new Color(127, 140, 141));
+        gbc.gridy = 1;
+        panel.add(subtitleLabel, gbc);
 
-        TextField usernameField = new TextField();
-        usernameField.setPromptText("Kullanıcı Adı");
-        usernameField.setPrefWidth(300);
-        usernameField.setPrefHeight(40);
-        usernameField.setStyle("-fx-font-size: 14px;");
+        // Kullanıcı adı
+        JLabel usernameLabel = new JLabel("Kullanıcı Adı:");
+        usernameLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        gbc.gridwidth = 1;
+        gbc.gridy = 2;
+        gbc.gridx = 0;
+        gbc.anchor = GridBagConstraints.EAST;
+        panel.add(usernameLabel, gbc);
 
-        PasswordField passwordField = new PasswordField();
-        passwordField.setPromptText("Şifre");
-        passwordField.setPrefWidth(300);
-        passwordField.setPrefHeight(40);
-        passwordField.setStyle("-fx-font-size: 14px;");
+        JTextField usernameField = new JTextField(20);
+        usernameField.setFont(new Font("Arial", Font.PLAIN, 14));
+        usernameField.setPreferredSize(new Dimension(300, 40));
+        gbc.gridx = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel.add(usernameField, gbc);
 
-        Button loginButton = new Button("Giriş Yap");
-        loginButton.setPrefWidth(300);
-        loginButton.setPrefHeight(45);
-        loginButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-cursor: hand;");
-        
-        loginButton.setOnMouseEntered(e -> loginButton.setStyle("-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-cursor: hand;"));
-        loginButton.setOnMouseExited(e -> loginButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-cursor: hand;"));
+        // Şifre
+        JLabel passwordLabel = new JLabel("Şifre:");
+        passwordLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        gbc.gridy = 3;
+        gbc.gridx = 0;
+        gbc.anchor = GridBagConstraints.EAST;
+        panel.add(passwordLabel, gbc);
 
-        Label errorLabel = new Label();
-        errorLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 12px;");
-        errorLabel.setVisible(false);
+        JPasswordField passwordField = new JPasswordField(20);
+        passwordField.setFont(new Font("Arial", Font.PLAIN, 14));
+        passwordField.setPreferredSize(new Dimension(300, 40));
+        gbc.gridx = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        panel.add(passwordField, gbc);
 
-        loginButton.setOnAction(e -> {
+        // Hata mesajı
+        JLabel errorLabel = new JLabel(" ");
+        errorLabel.setForeground(new Color(231, 76, 60));
+        errorLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+        gbc.gridy = 4;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        panel.add(errorLabel, gbc);
+
+        // Giriş butonu
+        JButton loginButton = new JButton("Giriş Yap");
+        loginButton.setFont(new Font("Arial", Font.BOLD, 16));
+        loginButton.setBackground(new Color(52, 152, 219));
+        loginButton.setForeground(Color.WHITE);
+        loginButton.setPreferredSize(new Dimension(300, 45));
+        loginButton.setFocusPainted(false);
+        loginButton.setBorderPainted(false);
+        loginButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        gbc.gridy = 5;
+        panel.add(loginButton, gbc);
+
+        loginButton.addActionListener(e -> {
             String username = usernameField.getText();
-            String password = passwordField.getText();
+            String password = new String(passwordField.getPassword());
 
             if (username.isEmpty() || password.isEmpty()) {
                 errorLabel.setText("Lütfen tüm alanları doldurun!");
-                errorLabel.setVisible(true);
                 return;
             }
 
             if (adminDAO.adminGiris(username, password)) {
-                errorLabel.setVisible(false);
-                primaryStage.setScene(createAdminPanelScene());
+                errorLabel.setText(" ");
+                cardLayout.show(mainPanel, "ADMIN");
             } else {
                 errorLabel.setText("Kullanıcı adı veya şifre hatalı!");
-                errorLabel.setVisible(true);
             }
         });
 
-        root.getChildren().addAll(titleLabel, subtitleLabel, usernameField, passwordField, loginButton, errorLabel);
-
-        return new Scene(root, 500, 500);
+        return panel;
     }
 
-    private Scene createAdminPanelScene() {
-        BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: #ecf0f1;");
+    private JPanel createAdminPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
 
         // Üst menü
-        HBox topMenu = new HBox(10);
-        topMenu.setPadding(new Insets(15));
-        topMenu.setStyle("-fx-background-color: #34495e;");
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setBackground(new Color(52, 73, 94));
+        topPanel.setPreferredSize(new Dimension(0, 60));
+        topPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
 
-        Label welcomeLabel = new Label("Admin Paneli");
-        welcomeLabel.setStyle("-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;");
+        JLabel welcomeLabel = new JLabel("Admin Paneli");
+        welcomeLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        welcomeLabel.setForeground(Color.WHITE);
+        topPanel.add(welcomeLabel, BorderLayout.WEST);
 
-        Button logoutButton = new Button("Çıkış Yap");
-        logoutButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 14px; -fx-cursor: hand;");
-        logoutButton.setOnAction(e -> primaryStage.setScene(createLoginScene()));
-
-        HBox.setHgrow(welcomeLabel, Priority.ALWAYS);
-        topMenu.getChildren().addAll(welcomeLabel, logoutButton);
+        JButton logoutButton = new JButton("Çıkış Yap");
+        logoutButton.setFont(new Font("Arial", Font.PLAIN, 14));
+        logoutButton.setBackground(new Color(231, 76, 60));
+        logoutButton.setForeground(Color.WHITE);
+        logoutButton.setFocusPainted(false);
+        logoutButton.setBorderPainted(false);
+        logoutButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        logoutButton.addActionListener(e -> {
+            cardLayout.show(mainPanel, "LOGIN");
+        });
+        topPanel.add(logoutButton, BorderLayout.EAST);
 
         // Sol menü
-        VBox leftMenu = new VBox(10);
-        leftMenu.setPadding(new Insets(20));
-        leftMenu.setPrefWidth(200);
-        leftMenu.setStyle("-fx-background-color: #2c3e50;");
+        JPanel leftPanel = new JPanel();
+        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
+        leftPanel.setBackground(new Color(44, 62, 80));
+        leftPanel.setPreferredSize(new Dimension(200, 0));
+        leftPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        Button kitapButton = new Button("Kitap Yönetimi");
-        Button kullaniciButton = new Button("Kullanıcı Yönetimi");
-        
+        JButton kitapButton = new JButton("Kitap Yönetimi");
+        JButton kullaniciButton = new JButton("Kullanıcı Yönetimi");
+
         styleMenuButton(kitapButton);
         styleMenuButton(kullaniciButton);
 
-        leftMenu.getChildren().addAll(kitapButton, kullaniciButton);
+        leftPanel.add(kitapButton);
+        leftPanel.add(Box.createVerticalStrut(10));
+        leftPanel.add(kullaniciButton);
 
-        // Merkez içerik alanı
-        StackPane centerPane = new StackPane();
-        centerPane.setPadding(new Insets(20));
+        // Merkez içerik
+        CardLayout contentLayout = new CardLayout();
+        JPanel contentPanel = new JPanel(contentLayout);
+        contentPanel.setBackground(new Color(236, 240, 241));
 
-        // Kitap yönetim ekranı
-        ScrollPane kitapPane = createKitapManagementPane();
-        kitapPane.setVisible(true);
+        JPanel kitapPanel = createKitapManagementPanel(contentLayout, contentPanel);
+        JPanel kullaniciPanel = createKullaniciManagementPanel();
 
-        // Kullanıcı yönetim ekranı
-        ScrollPane kullaniciPane = createKullaniciManagementPane();
-        kullaniciPane.setVisible(false);
+        contentPanel.add(kitapPanel, "KITAP");
+        contentPanel.add(kullaniciPanel, "KULLANICI");
 
-        centerPane.getChildren().addAll(kitapPane, kullaniciPane);
+        kitapButton.addActionListener(e -> contentLayout.show(contentPanel, "KITAP"));
+        kullaniciButton.addActionListener(e -> contentLayout.show(contentPanel, "KULLANICI"));
 
-        kitapButton.setOnAction(e -> {
-            kitapPane.setVisible(true);
-            kullaniciPane.setVisible(false);
-        });
+        panel.add(topPanel, BorderLayout.NORTH);
+        panel.add(leftPanel, BorderLayout.WEST);
+        panel.add(contentPanel, BorderLayout.CENTER);
 
-        kullaniciButton.setOnAction(e -> {
-            kitapPane.setVisible(false);
-            kullaniciPane.setVisible(true);
-        });
-
-        root.setTop(topMenu);
-        root.setLeft(leftMenu);
-        root.setCenter(centerPane);
-
-        return new Scene(root, 1000, 700);
+        return panel;
     }
 
-    private void styleMenuButton(Button button) {
-        button.setPrefWidth(180);
-        button.setPrefHeight(50);
-        button.setStyle("-fx-background-color: #34495e; -fx-text-fill: white; -fx-font-size: 14px; -fx-cursor: hand;");
-        button.setOnMouseEntered(e -> button.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 14px; -fx-cursor: hand;"));
-        button.setOnMouseExited(e -> button.setStyle("-fx-background-color: #34495e; -fx-text-fill: white; -fx-font-size: 14px; -fx-cursor: hand;"));
+    private void styleMenuButton(JButton button) {
+        button.setAlignmentX(Component.LEFT_ALIGNMENT);
+        button.setPreferredSize(new Dimension(180, 50));
+        button.setMaximumSize(new Dimension(180, 50));
+        button.setFont(new Font("Arial", Font.PLAIN, 14));
+        button.setBackground(new Color(52, 73, 94));
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                button.setBackground(new Color(52, 152, 219));
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.setBackground(new Color(52, 73, 94));
+            }
+        });
     }
 
-    private ScrollPane createKitapManagementPane() {
-        VBox content = new VBox(20);
-        content.setPadding(new Insets(20));
-        content.setStyle("-fx-background-color: white;");
+    private JPanel createKitapManagementPanel(CardLayout contentLayout, JPanel contentPanel) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        Label titleLabel = new Label("Kitap Yönetimi");
-        titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+        JPanel mainContent = new JPanel();
+        mainContent.setLayout(new BoxLayout(mainContent, BoxLayout.Y_AXIS));
 
-        // Kitap ekleme formu
-        VBox formBox = new VBox(15);
-        formBox.setPadding(new Insets(20));
-        formBox.setStyle("-fx-background-color: #ecf0f1; -fx-background-radius: 10;");
+        // Başlık
+        JLabel titleLabel = new JLabel("Kitap Yönetimi");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setForeground(new Color(44, 62, 80));
+        titleLabel.setBorder(new EmptyBorder(0, 0, 20, 0));
+        mainContent.add(titleLabel);
 
-        Label formTitle = new Label("Yeni Kitap Ekle");
-        formTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+        // Form paneli
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setBackground(new Color(236, 240, 241));
+        formPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(189, 195, 199), 1),
+            new EmptyBorder(20, 20, 20, 20)
+        ));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.anchor = GridBagConstraints.WEST;
 
-        GridPane formGrid = new GridPane();
-        formGrid.setHgap(10);
-        formGrid.setVgap(10);
+        JLabel formTitle = new JLabel("Yeni Kitap Ekle");
+        formTitle.setFont(new Font("Arial", Font.BOLD, 18));
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        formPanel.add(formTitle, gbc);
 
-        TextField kitapAdiField = new TextField();
-        TextField yazarField = new TextField();
-        TextField yayinYiliField = new TextField();
-        TextField sayfaSayisiField = new TextField();
-        TextField stokField = new TextField();
-        TextField rafField = new TextField();
-        DatePicker teslimTarihiPicker = new DatePicker();
-        TextField kitapIdField = new TextField();
+        // Form alanları
+        JTextField kitapIdField = new JTextField(15);
+        JTextField kitapAdiField = new JTextField(15);
+        JTextField yazarField = new JTextField(15);
+        JTextField yayinYiliField = new JTextField(15);
+        JTextField sayfaSayisiField = new JTextField(15);
+        JTextField stokField = new JTextField(15);
+        JTextField rafField = new JTextField(15);
+        JTextField teslimTarihiField = new JTextField(15);
+        teslimTarihiField.setToolTipText("YYYY-MM-DD formatında girin (örn: 2024-12-31)");
 
-        formGrid.add(new Label("Kitap ID:"), 0, 0);
-        formGrid.add(kitapIdField, 1, 0);
-        formGrid.add(new Label("Kitap Adı:"), 0, 1);
-        formGrid.add(kitapAdiField, 1, 1);
-        formGrid.add(new Label("Yazar:"), 0, 2);
-        formGrid.add(yazarField, 1, 2);
-        formGrid.add(new Label("Yayın Yılı:"), 0, 3);
-        formGrid.add(yayinYiliField, 1, 3);
-        formGrid.add(new Label("Sayfa Sayısı:"), 0, 4);
-        formGrid.add(sayfaSayisiField, 1, 4);
-        formGrid.add(new Label("Stok:"), 0, 5);
-        formGrid.add(stokField, 1, 5);
-        formGrid.add(new Label("Raf Konumu:"), 0, 6);
-        formGrid.add(rafField, 1, 6);
-        formGrid.add(new Label("Teslim Tarihi:"), 0, 7);
-        formGrid.add(teslimTarihiPicker, 1, 7);
+        gbc.gridwidth = 1;
+        gbc.gridy = 1;
+        formPanel.add(new JLabel("Kitap ID:"), gbc);
+        gbc.gridx = 1;
+        formPanel.add(kitapIdField, gbc);
 
-        Button ekleButton = new Button("Kitap Ekle");
-        ekleButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 14px; -fx-cursor: hand; -fx-pref-width: 150; -fx-pref-height: 35;");
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        formPanel.add(new JLabel("Kitap Adı:"), gbc);
+        gbc.gridx = 1;
+        formPanel.add(kitapAdiField, gbc);
 
-        Label messageLabel = new Label();
-        messageLabel.setStyle("-fx-font-size: 12px;");
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        formPanel.add(new JLabel("Yazar:"), gbc);
+        gbc.gridx = 1;
+        formPanel.add(yazarField, gbc);
 
-        // Kitap listesi - önce tanımlanmalı
-        VBox kitapListBox = new VBox(10);
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        formPanel.add(new JLabel("Yayın Yılı:"), gbc);
+        gbc.gridx = 1;
+        formPanel.add(yayinYiliField, gbc);
 
-        ekleButton.setOnAction(e -> {
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        formPanel.add(new JLabel("Sayfa Sayısı:"), gbc);
+        gbc.gridx = 1;
+        formPanel.add(sayfaSayisiField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 6;
+        formPanel.add(new JLabel("Stok:"), gbc);
+        gbc.gridx = 1;
+        formPanel.add(stokField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 7;
+        formPanel.add(new JLabel("Raf Konumu:"), gbc);
+        gbc.gridx = 1;
+        formPanel.add(rafField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 8;
+        formPanel.add(new JLabel("Teslim Tarihi (YYYY-MM-DD):"), gbc);
+        gbc.gridx = 1;
+        formPanel.add(teslimTarihiField, gbc);
+
+        JLabel messageLabel = new JLabel(" ");
+        messageLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+        gbc.gridx = 0;
+        gbc.gridy = 9;
+        gbc.gridwidth = 2;
+        formPanel.add(messageLabel, gbc);
+
+        JButton ekleButton = new JButton("Kitap Ekle");
+        ekleButton.setFont(new Font("Arial", Font.PLAIN, 14));
+        ekleButton.setBackground(new Color(39, 174, 96));
+        ekleButton.setForeground(Color.WHITE);
+        ekleButton.setFocusPainted(false);
+        ekleButton.setBorderPainted(false);
+        ekleButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        ekleButton.setPreferredSize(new Dimension(150, 35));
+        gbc.gridy = 10;
+        formPanel.add(ekleButton, gbc);
+
+        // Kitap listesi
+        DefaultTableModel tableModel = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        tableModel.setColumnIdentifiers(new Object[]{"ID", "Kitap Adı", "Yazar", "Stok", "Durum", "Konum", "İşlemler"});
+
+        JTable kitapTable = new JTable(tableModel);
+        kitapTable.setFont(new Font("Arial", Font.PLAIN, 12));
+        kitapTable.setRowHeight(25);
+        JScrollPane tableScroll = new JScrollPane(kitapTable);
+        tableScroll.setPreferredSize(new Dimension(0, 300));
+
+        JLabel listTitle = new JLabel("Kitap Listesi");
+        listTitle.setFont(new Font("Arial", Font.BOLD, 18));
+        listTitle.setBorder(new EmptyBorder(20, 0, 10, 0));
+
+        // Ekle butonu işlevi
+        ekleButton.addActionListener(e -> {
             try {
                 int kitapId = Integer.parseInt(kitapIdField.getText());
                 String kitapAdi = kitapAdiField.getText();
@@ -215,11 +347,11 @@ public class LibraryApp extends Application {
                 int sayfaSayisi = Integer.parseInt(sayfaSayisiField.getText());
                 int stok = Integer.parseInt(stokField.getText());
                 String raf = rafField.getText();
-                java.time.LocalDate teslimTarihi = teslimTarihiPicker.getValue();
+                LocalDate teslimTarihi = LocalDate.parse(teslimTarihiField.getText());
 
-                if (teslimTarihi == null) {
-                    messageLabel.setText("Lütfen teslim tarihini seçin!");
-                    messageLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 12px;");
+                if (kitapAdi.isEmpty() || yazar.isEmpty() || raf.isEmpty()) {
+                    messageLabel.setText("Lütfen tüm alanları doldurun!");
+                    messageLabel.setForeground(new Color(231, 76, 60));
                     return;
                 }
 
@@ -228,135 +360,324 @@ public class LibraryApp extends Application {
                 kitapDAO.kitapEkle(yeniKitap);
 
                 messageLabel.setText("Kitap başarıyla eklendi!");
-                messageLabel.setStyle("-fx-text-fill: #27ae60; -fx-font-size: 12px;");
+                messageLabel.setForeground(new Color(39, 174, 96));
 
                 // Formu temizle
-                kitapIdField.clear();
-                kitapAdiField.clear();
-                yazarField.clear();
-                yayinYiliField.clear();
-                sayfaSayisiField.clear();
-                stokField.clear();
-                rafField.clear();
-                teslimTarihiPicker.setValue(null);
+                kitapIdField.setText("");
+                kitapAdiField.setText("");
+                yazarField.setText("");
+                yayinYiliField.setText("");
+                sayfaSayisiField.setText("");
+                stokField.setText("");
+                rafField.setText("");
+                teslimTarihiField.setText("");
 
-                // Kitap listesini yenile
-                refreshKitapListesi(kitapListBox);
+                // Listeyi yenile
+                refreshKitapListesi(tableModel, kitapTable);
 
             } catch (NumberFormatException ex) {
                 messageLabel.setText("Lütfen sayısal alanları doğru formatta girin!");
-                messageLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 12px;");
+                messageLabel.setForeground(new Color(231, 76, 60));
             } catch (Exception ex) {
                 messageLabel.setText("Hata: " + ex.getMessage());
-                messageLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 12px;");
+                messageLabel.setForeground(new Color(231, 76, 60));
             }
         });
 
-        formBox.getChildren().addAll(formTitle, formGrid, ekleButton, messageLabel);
+        // Listeyi yenile butonu
+        JButton refreshButton = new JButton("Listeyi Yenile");
+        refreshButton.setFont(new Font("Arial", Font.PLAIN, 12));
+        refreshButton.setBackground(new Color(52, 152, 219));
+        refreshButton.setForeground(Color.WHITE);
+        refreshButton.setFocusPainted(false);
+        refreshButton.setBorderPainted(false);
+        refreshButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        refreshButton.addActionListener(e -> refreshKitapListesi(tableModel, kitapTable));
 
-        // Kitap listesi
-        VBox listBox = new VBox(10);
-        Label listTitle = new Label("Kitap Listesi");
-        listTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
-        refreshKitapListesi(kitapListBox);
+        mainContent.add(formPanel);
+        mainContent.add(Box.createVerticalStrut(20));
+        mainContent.add(listTitle);
+        mainContent.add(refreshButton);
+        mainContent.add(tableScroll);
 
-        ScrollPane listScroll = new ScrollPane(kitapListBox);
-        listScroll.setFitToWidth(true);
-        listScroll.setPrefHeight(400);
+        refreshKitapListesi(tableModel, kitapTable);
 
-        listBox.getChildren().addAll(listTitle, listScroll);
-
-        content.getChildren().addAll(titleLabel, formBox, listBox);
-
-        ScrollPane scrollPane = new ScrollPane(content);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setFitToHeight(true);
-
-        return scrollPane;
+        panel.add(mainContent, BorderLayout.CENTER);
+        return panel;
     }
 
-    private void refreshKitapListesi(VBox kitapListBox) {
-        kitapListBox.getChildren().clear();
+    private void refreshKitapListesi(DefaultTableModel tableModel, JTable kitapTable) {
+        tableModel.setRowCount(0);
         KitapVeriTabaniOluştur kitapDAO = new KitapVeriTabaniOluştur();
-        java.util.List<Kitap> kitaplar = kitapDAO.tumKitaplar();
+        OduncVeriTabaniOluştur oduncDAO = new OduncVeriTabaniOluştur();
+        List<Kitap> kitaplar = kitapDAO.tumKitaplar();
 
-        if (kitaplar.isEmpty()) {
-            Label emptyLabel = new Label("Henüz kitap eklenmemiş.");
-            emptyLabel.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 14px;");
-            kitapListBox.getChildren().add(emptyLabel);
-        } else {
-            for (Kitap kitap : kitaplar) {
-                HBox kitapCard = new HBox(15);
-                kitapCard.setPadding(new Insets(15));
-                kitapCard.setStyle("-fx-background-color: #ffffff; -fx-background-radius: 5; -fx-border-color: #bdc3c7; -fx-border-radius: 5;");
+        for (Kitap kitap : kitaplar) {
+            int kitapId = kitap.getKitapİd();
+            boolean verilmisMi = oduncDAO.kitapVerilmisMi(kitapId);
+            String durum = verilmisMi ? "Ödünç Verildi" : "Rafta";
+            String konum = oduncDAO.kitapKonumu(kitapId);
+            
+            // Buton paneli
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
+            buttonPanel.setBackground(Color.WHITE);
+            
+            JButton oduncVerButton = new JButton("Ödünç Ver");
+            oduncVerButton.setFont(new Font("Arial", Font.PLAIN, 10));
+            oduncVerButton.setBackground(new Color(52, 152, 219));
+            oduncVerButton.setForeground(Color.WHITE);
+            oduncVerButton.setFocusPainted(false);
+            oduncVerButton.setBorderPainted(false);
+            oduncVerButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            oduncVerButton.setEnabled(!verilmisMi && kitap.getStokSayisi() > 0);
+            
+            JButton silButton = new JButton("Sil");
+            silButton.setFont(new Font("Arial", Font.PLAIN, 10));
+            silButton.setBackground(new Color(231, 76, 60));
+            silButton.setForeground(Color.WHITE);
+            silButton.setFocusPainted(false);
+            silButton.setBorderPainted(false);
+            silButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            
+            oduncVerButton.addActionListener(e -> {
+                showOduncVerDialog(kitapId, kitap.getKitapAdi());
+                refreshKitapListesi(tableModel, kitapTable);
+            });
+            
+            silButton.addActionListener(e -> {
+                int confirm = JOptionPane.showConfirmDialog(
+                    this,
+                    "Bu kitabı silmek istediğinizden emin misiniz?",
+                    "Onay",
+                    JOptionPane.YES_NO_OPTION
+                );
+                if (confirm == JOptionPane.YES_OPTION) {
+                    kitapDAO.kitapSil(kitapId);
+                    refreshKitapListesi(tableModel, kitapTable);
+                }
+            });
+            
+            buttonPanel.add(oduncVerButton);
+            buttonPanel.add(silButton);
 
-                VBox infoBox = new VBox(5);
-                Label kitapInfo = new Label("ID: " + kitap.getKitapİd() + " | " + kitap.getKitapAdi() + " - " + kitap.getYazarAdi());
-                kitapInfo.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
-                Label detayInfo = new Label("Yayın Yılı: " + kitap.getYayinYili() + " | Sayfa: " + kitap.getSayfaSayisi() + " | Stok: " + kitap.getStokSayisi() + " | Raf: " + kitap.getRafKonumu());
-                detayInfo.setStyle("-fx-font-size: 12px; -fx-text-fill: #7f8c8d;");
-
-                infoBox.getChildren().addAll(kitapInfo, detayInfo);
-
-                Button silButton = new Button("Sil");
-                silButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 12px; -fx-cursor: hand;");
-                silButton.setOnAction(e -> {
-                    KitapVeriTabaniOluştur kitapDAO = new KitapVeriTabaniOluştur();
-                    kitapDAO.kitapSil(kitap.getKitapİd());
-                    refreshKitapListesi(kitapListBox);
-                });
-
-                HBox.setHgrow(infoBox, Priority.ALWAYS);
-                kitapCard.getChildren().addAll(infoBox, silButton);
-                kitapListBox.getChildren().add(kitapCard);
-            }
+            Object[] row = {
+                kitap.getKitapİd(),
+                kitap.getKitapAdi(),
+                kitap.getYazarAdi(),
+                kitap.getStokSayisi(),
+                durum,
+                konum,
+                buttonPanel
+            };
+            tableModel.addRow(row);
         }
+
+        // Buton panelini tabloya eklemek için renderer
+        kitapTable.getColumn("İşlemler").setCellRenderer(new TableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                return (Component) value;
+            }
+        });
+
+        kitapTable.getColumn("İşlemler").setCellEditor(new DefaultCellEditor(new JCheckBox()) {
+            @Override
+            public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+                return (Component) value;
+            }
+        });
+    }
+    
+    private void showOduncVerDialog(int kitapId, String kitapAdi) {
+        JDialog dialog = new JDialog(this, "Kitap Ödünç Ver", true);
+        dialog.setSize(400, 250);
+        dialog.setLocationRelativeTo(this);
+        
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        
+        JLabel kitapLabel = new JLabel("Kitap: " + kitapAdi);
+        kitapLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        panel.add(kitapLabel, gbc);
+        
+        gbc.gridwidth = 1;
+        gbc.gridy = 1;
+        panel.add(new JLabel("Kullanıcı ID:"), gbc);
+        
+        JTextField kullaniciIdField = new JTextField(15);
+        gbc.gridx = 1;
+        panel.add(kullaniciIdField, gbc);
+        
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        panel.add(new JLabel("Teslim Tarihi (YYYY-MM-DD):"), gbc);
+        
+        JTextField teslimTarihiField = new JTextField(15);
+        gbc.gridx = 1;
+        panel.add(teslimTarihiField, gbc);
+        
+        JLabel errorLabel = new JLabel(" ");
+        errorLabel.setForeground(new Color(231, 76, 60));
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.gridwidth = 2;
+        panel.add(errorLabel, gbc);
+        
+        JButton verButton = new JButton("Ödünç Ver");
+        verButton.setBackground(new Color(39, 174, 96));
+        verButton.setForeground(Color.WHITE);
+        verButton.setFocusPainted(false);
+        verButton.setBorderPainted(false);
+        verButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        verButton.addActionListener(e -> {
+            try {
+                int kullaniciId = Integer.parseInt(kullaniciIdField.getText());
+                LocalDate teslimTarihi = LocalDate.parse(teslimTarihiField.getText());
+                
+                OduncVeriTabaniOluştur oduncDAO = new OduncVeriTabaniOluştur();
+                oduncDAO.kitapVer(kullaniciId, kitapId, teslimTarihi);
+                
+                JOptionPane.showMessageDialog(dialog, "Kitap başarıyla ödünç verildi!", "Başarılı", JOptionPane.INFORMATION_MESSAGE);
+                dialog.dispose();
+                
+            } catch (NumberFormatException ex) {
+                errorLabel.setText("Lütfen geçerli bir kullanıcı ID girin!");
+            } catch (Exception ex) {
+                errorLabel.setText("Hata: " + ex.getMessage());
+            }
+        });
+        
+        gbc.gridy = 4;
+        panel.add(verButton, gbc);
+        
+        dialog.add(panel);
+        dialog.setVisible(true);
     }
 
-    private ScrollPane createKullaniciManagementPane() {
-        VBox content = new VBox(20);
-        content.setPadding(new Insets(20));
-        content.setStyle("-fx-background-color: white;");
+    private JPanel createKullaniciManagementPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        Label titleLabel = new Label("Kullanıcı Yönetimi");
-        titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+        JPanel mainContent = new JPanel();
+        mainContent.setLayout(new BoxLayout(mainContent, BoxLayout.Y_AXIS));
 
-        // Kullanıcı ekleme formu
-        VBox formBox = new VBox(15);
-        formBox.setPadding(new Insets(20));
-        formBox.setStyle("-fx-background-color: #ecf0f1; -fx-background-radius: 10;");
+        // Başlık
+        JLabel titleLabel = new JLabel("Kullanıcı Yönetimi");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setForeground(new Color(44, 62, 80));
+        titleLabel.setBorder(new EmptyBorder(0, 0, 20, 0));
+        mainContent.add(titleLabel);
 
-        Label formTitle = new Label("Yeni Kullanıcı Ekle");
-        formTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+        // Form paneli
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setBackground(new Color(236, 240, 241));
+        formPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(189, 195, 199), 1),
+            new EmptyBorder(20, 20, 20, 20)
+        ));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.anchor = GridBagConstraints.WEST;
 
-        GridPane formGrid = new GridPane();
-        formGrid.setHgap(10);
-        formGrid.setVgap(10);
+        JLabel formTitle = new JLabel("Yeni Kullanıcı Ekle");
+        formTitle.setFont(new Font("Arial", Font.BOLD, 18));
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        formPanel.add(formTitle, gbc);
 
-        TextField kullaniciIdField = new TextField();
-        TextField adSoyadField = new TextField();
+        JTextField kullaniciIdField = new JTextField(15);
+        JTextField adSoyadField = new JTextField(15);
 
-        formGrid.add(new Label("Kullanıcı ID:"), 0, 0);
-        formGrid.add(kullaniciIdField, 1, 0);
-        formGrid.add(new Label("Ad Soyad:"), 0, 1);
-        formGrid.add(adSoyadField, 1, 1);
+        gbc.gridwidth = 1;
+        gbc.gridy = 1;
+        formPanel.add(new JLabel("Kullanıcı ID:"), gbc);
+        gbc.gridx = 1;
+        formPanel.add(kullaniciIdField, gbc);
 
-        Button ekleButton = new Button("Kullanıcı Ekle");
-        ekleButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 14px; -fx-cursor: hand; -fx-pref-width: 150; -fx-pref-height: 35;");
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        formPanel.add(new JLabel("Ad Soyad:"), gbc);
+        gbc.gridx = 1;
+        formPanel.add(adSoyadField, gbc);
 
-        Label messageLabel = new Label();
-        messageLabel.setStyle("-fx-font-size: 12px;");
+        JLabel messageLabel = new JLabel(" ");
+        messageLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.gridwidth = 2;
+        formPanel.add(messageLabel, gbc);
 
-        VBox kullaniciListBox = new VBox(10);
+        JButton ekleButton = new JButton("Kullanıcı Ekle");
+        ekleButton.setFont(new Font("Arial", Font.PLAIN, 14));
+        ekleButton.setBackground(new Color(39, 174, 96));
+        ekleButton.setForeground(Color.WHITE);
+        ekleButton.setFocusPainted(false);
+        ekleButton.setBorderPainted(false);
+        ekleButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        ekleButton.setPreferredSize(new Dimension(150, 35));
+        gbc.gridy = 4;
+        formPanel.add(ekleButton, gbc);
 
-        ekleButton.setOnAction(e -> {
+        // Kullanıcı listesi
+        DefaultTableModel tableModel = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        tableModel.setColumnIdentifiers(new Object[]{"ID", "Ad Soyad", "İşlemler"});
+
+        JTable kullaniciTable = new JTable(tableModel);
+        kullaniciTable.setFont(new Font("Arial", Font.PLAIN, 12));
+        kullaniciTable.setRowHeight(25);
+        
+        // Buton renderer ve editor
+        kullaniciTable.getColumn("İşlemler").setCellRenderer(new TableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                return (Component) value;
+            }
+        });
+
+        kullaniciTable.getColumn("İşlemler").setCellEditor(new DefaultCellEditor(new JCheckBox()) {
+            @Override
+            public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+                return (Component) value;
+            }
+        });
+        
+        JScrollPane tableScroll = new JScrollPane(kullaniciTable);
+        tableScroll.setPreferredSize(new Dimension(0, 300));
+
+        JLabel listTitle = new JLabel("Kullanıcı Listesi");
+        listTitle.setFont(new Font("Arial", Font.BOLD, 18));
+        listTitle.setBorder(new EmptyBorder(20, 0, 10, 0));
+
+        JButton refreshButton = new JButton("Listeyi Yenile");
+        refreshButton.setFont(new Font("Arial", Font.PLAIN, 12));
+        refreshButton.setBackground(new Color(52, 152, 219));
+        refreshButton.setForeground(Color.WHITE);
+        refreshButton.setFocusPainted(false);
+        refreshButton.setBorderPainted(false);
+        refreshButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        refreshButton.addActionListener(e -> refreshKullaniciListesi(tableModel, kullaniciTable));
+
+        ekleButton.addActionListener(e -> {
             try {
                 int kullaniciId = Integer.parseInt(kullaniciIdField.getText());
                 String adSoyad = adSoyadField.getText();
 
                 if (adSoyad.isEmpty()) {
                     messageLabel.setText("Lütfen ad soyad girin!");
-                    messageLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 12px;");
+                    messageLabel.setForeground(new Color(231, 76, 60));
                     return;
                 }
 
@@ -365,73 +686,218 @@ public class LibraryApp extends Application {
                 kullaniciDAO.kullaniciEkle(yeniKullanici);
 
                 messageLabel.setText("Kullanıcı başarıyla eklendi!");
-                messageLabel.setStyle("-fx-text-fill: #27ae60; -fx-font-size: 12px;");
+                messageLabel.setForeground(new Color(39, 174, 96));
 
-                kullaniciIdField.clear();
-                adSoyadField.clear();
+                kullaniciIdField.setText("");
+                adSoyadField.setText("");
 
-                refreshKullaniciListesi(kullaniciListBox);
+                refreshKullaniciListesi(tableModel, kullaniciTable);
 
             } catch (NumberFormatException ex) {
                 messageLabel.setText("Lütfen kullanıcı ID'sini doğru formatta girin!");
-                messageLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 12px;");
+                messageLabel.setForeground(new Color(231, 76, 60));
             } catch (Exception ex) {
                 messageLabel.setText("Hata: " + ex.getMessage());
-                messageLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 12px;");
+                messageLabel.setForeground(new Color(231, 76, 60));
             }
         });
 
-        formBox.getChildren().addAll(formTitle, formGrid, ekleButton, messageLabel);
+        mainContent.add(formPanel);
+        mainContent.add(Box.createVerticalStrut(20));
+        mainContent.add(listTitle);
+        mainContent.add(refreshButton);
+        mainContent.add(tableScroll);
 
-        // Kullanıcı listesi
-        VBox listBox = new VBox(10);
-        Label listTitle = new Label("Kullanıcı Listesi");
-        listTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+        refreshKullaniciListesi(tableModel, kullaniciTable);
 
-        refreshKullaniciListesi(kullaniciListBox);
-
-        ScrollPane listScroll = new ScrollPane(kullaniciListBox);
-        listScroll.setFitToWidth(true);
-        listScroll.setPrefHeight(400);
-
-        listBox.getChildren().addAll(listTitle, listScroll);
-
-        content.getChildren().addAll(titleLabel, formBox, listBox);
-
-        ScrollPane scrollPane = new ScrollPane(content);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setFitToHeight(true);
-
-        return scrollPane;
+        panel.add(mainContent, BorderLayout.CENTER);
+        return panel;
     }
 
-    private void refreshKullaniciListesi(VBox kullaniciListBox) {
-        kullaniciListBox.getChildren().clear();
+    private void refreshKullaniciListesi(DefaultTableModel tableModel, JTable kullaniciTable) {
+        tableModel.setRowCount(0);
         KullanıcıVeriTabaniOluştur kullaniciDAO = new KullanıcıVeriTabaniOluştur();
-        java.util.List<Kullanıcı> kullanicilar = kullaniciDAO.tumKullanicilar();
+        List<Kullanıcı> kullanicilar = kullaniciDAO.tumKullanicilar();
 
-        if (kullanicilar.isEmpty()) {
-            Label emptyLabel = new Label("Henüz kullanıcı eklenmemiş.");
-            emptyLabel.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 14px;");
-            kullaniciListBox.getChildren().add(emptyLabel);
-        } else {
-            for (Kullanıcı kullanici : kullanicilar) {
-                HBox kullaniciCard = new HBox(15);
-                kullaniciCard.setPadding(new Insets(15));
-                kullaniciCard.setStyle("-fx-background-color: #ffffff; -fx-background-radius: 5; -fx-border-color: #bdc3c7; -fx-border-radius: 5;");
-
-                Label kullaniciInfo = new Label("ID: " + kullanici.getKullaniciİd() + " | " + kullanici.getAdSoyad());
-                kullaniciInfo.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
-
-                HBox.setHgrow(kullaniciInfo, Priority.ALWAYS);
-                kullaniciCard.getChildren().add(kullaniciInfo);
-                kullaniciListBox.getChildren().add(kullaniciCard);
-            }
+        for (Kullanıcı kullanici : kullanicilar) {
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
+            buttonPanel.setBackground(Color.WHITE);
+            
+            JButton kitaplariGosterButton = new JButton("Kitapları Göster");
+            kitaplariGosterButton.setFont(new Font("Arial", Font.PLAIN, 10));
+            kitaplariGosterButton.setBackground(new Color(52, 152, 219));
+            kitaplariGosterButton.setForeground(Color.WHITE);
+            kitaplariGosterButton.setFocusPainted(false);
+            kitaplariGosterButton.setBorderPainted(false);
+            kitaplariGosterButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            
+            JButton silButton = new JButton("Sil");
+            silButton.setFont(new Font("Arial", Font.PLAIN, 10));
+            silButton.setBackground(new Color(231, 76, 60));
+            silButton.setForeground(Color.WHITE);
+            silButton.setFocusPainted(false);
+            silButton.setBorderPainted(false);
+            silButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            
+            int kullaniciId = kullanici.getKullaniciİd();
+            
+            kitaplariGosterButton.addActionListener(e -> {
+                showKullaniciKitaplariDialog(kullaniciId, kullanici.getAdSoyad());
+            });
+            
+            silButton.addActionListener(e -> {
+                int confirm = JOptionPane.showConfirmDialog(
+                    this,
+                    "Bu kullanıcıyı silmek istediğinizden emin misiniz?",
+                    "Onay",
+                    JOptionPane.YES_NO_OPTION
+                );
+                if (confirm == JOptionPane.YES_OPTION) {
+                    kullaniciDAO.kullaniciSil(kullaniciId);
+                    refreshKullaniciListesi(tableModel, kullaniciTable);
+                }
+            });
+            
+            buttonPanel.add(kitaplariGosterButton);
+            buttonPanel.add(silButton);
+            
+            Object[] row = {
+                kullanici.getKullaniciİd(),
+                kullanici.getAdSoyad(),
+                buttonPanel
+            };
+            tableModel.addRow(row);
         }
+    }
+    
+    private void showKullaniciKitaplariDialog(int kullaniciId, String kullaniciAdi) {
+        JDialog dialog = new JDialog(this, kullaniciAdi + " - Ödünç Alınan Kitaplar", true);
+        dialog.setSize(800, 500);
+        dialog.setLocationRelativeTo(this);
+        
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        
+        JLabel titleLabel = new JLabel(kullaniciAdi + " - Ödünç Alınan Kitaplar");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        titleLabel.setBorder(new EmptyBorder(0, 0, 15, 0));
+        panel.add(titleLabel, BorderLayout.NORTH);
+        
+        DefaultTableModel tableModel = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        tableModel.setColumnIdentifiers(new Object[]{"Kitap Adı", "Yazar", "Alış Tarihi", "Teslim Tarihi", "Durum", "İşlem"});
+        
+        JTable kitaplarTable = new JTable(tableModel);
+        kitaplarTable.setFont(new Font("Arial", Font.PLAIN, 12));
+        kitaplarTable.setRowHeight(25);
+        JScrollPane tableScroll = new JScrollPane(kitaplarTable);
+        
+        OduncVeriTabaniOluştur oduncDAO = new OduncVeriTabaniOluştur();
+        List<OduncBilgi> kitaplar = oduncDAO.kullaniciKitaplari(kullaniciId);
+        
+        for (OduncBilgi odunc : kitaplar) {
+            JButton teslimButton = new JButton("Teslim Al");
+            teslimButton.setFont(new Font("Arial", Font.PLAIN, 10));
+            teslimButton.setBackground(new Color(39, 174, 96));
+            teslimButton.setForeground(Color.WHITE);
+            teslimButton.setFocusPainted(false);
+            teslimButton.setBorderPainted(false);
+            teslimButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            
+            int oduncId = odunc.getOduncId();
+            teslimButton.addActionListener(e -> {
+                int confirm = JOptionPane.showConfirmDialog(
+                    dialog,
+                    "Kitabı teslim almak istediğinizden emin misiniz?",
+                    "Onay",
+                    JOptionPane.YES_NO_OPTION
+                );
+                if (confirm == JOptionPane.YES_OPTION) {
+                    oduncDAO.kitapTeslimAl(oduncId);
+                    JOptionPane.showMessageDialog(dialog, "Kitap başarıyla teslim alındı!", "Başarılı", JOptionPane.INFORMATION_MESSAGE);
+                    
+                    // Listeyi yenile
+                    tableModel.setRowCount(0);
+                    List<OduncBilgi> yeniKitaplar = oduncDAO.kullaniciKitaplari(kullaniciId);
+                    for (OduncBilgi yeniOdunc : yeniKitaplar) {
+                        JButton yeniTeslimButton = new JButton("Teslim Al");
+                        yeniTeslimButton.setFont(new Font("Arial", Font.PLAIN, 10));
+                        yeniTeslimButton.setBackground(new Color(39, 174, 96));
+                        yeniTeslimButton.setForeground(Color.WHITE);
+                        yeniTeslimButton.setFocusPainted(false);
+                        yeniTeslimButton.setBorderPainted(false);
+                        yeniTeslimButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                        
+                        int yeniOduncId = yeniOdunc.getOduncId();
+                        yeniTeslimButton.addActionListener(ev -> {
+                            int confirm2 = JOptionPane.showConfirmDialog(
+                                dialog,
+                                "Kitabı teslim almak istediğinizden emin misiniz?",
+                                "Onay",
+                                JOptionPane.YES_NO_OPTION
+                            );
+                            if (confirm2 == JOptionPane.YES_OPTION) {
+                                oduncDAO.kitapTeslimAl(yeniOduncId);
+                                JOptionPane.showMessageDialog(dialog, "Kitap başarıyla teslim alındı!", "Başarılı", JOptionPane.INFORMATION_MESSAGE);
+                                dialog.dispose();
+                            }
+                        });
+                        
+                        tableModel.addRow(new Object[]{
+                            yeniOdunc.getKitapAdi(),
+                            yeniOdunc.getYazarAdi(),
+                            yeniOdunc.getAlisTarihi(),
+                            yeniOdunc.getTeslimTarihi(),
+                            yeniOdunc.getDurum(),
+                            yeniTeslimButton
+                        });
+                    }
+                }
+            });
+            
+            tableModel.addRow(new Object[]{
+                odunc.getKitapAdi(),
+                odunc.getYazarAdi(),
+                odunc.getAlisTarihi(),
+                odunc.getTeslimTarihi(),
+                odunc.getDurum(),
+                teslimButton
+            });
+        }
+        
+        kitaplarTable.getColumn("İşlem").setCellRenderer(new TableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                return (Component) value;
+            }
+        });
+
+        kitaplarTable.getColumn("İşlem").setCellEditor(new DefaultCellEditor(new JCheckBox()) {
+            @Override
+            public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+                return (Component) value;
+            }
+        });
+        
+        panel.add(tableScroll, BorderLayout.CENTER);
+        dialog.add(panel);
+        dialog.setVisible(true);
     }
 
     public static void main(String[] args) {
-        launch(args);
+        SwingUtilities.invokeLater(() -> {
+            try {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            LibraryApp app = new LibraryApp();
+            app.setVisible(true);
+        });
     }
 }
-

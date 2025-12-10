@@ -1,6 +1,6 @@
 # Kütüphane Yönetim Sistemi
 
-Modern ve kullanıcı dostu bir kütüphane yönetim sistemi. JavaFX ile geliştirilmiş grafik arayüze sahip, PostgreSQL veritabanı kullanan bir uygulamadır.
+Modern ve kullanıcı dostu bir kütüphane yönetim sistemi. Java Swing ile geliştirilmiş grafik arayüze sahip, PostgreSQL veritabanı kullanan bir uygulamadır.
 
 ## Özellikler
 
@@ -13,14 +13,13 @@ Modern ve kullanıcı dostu bir kütüphane yönetim sistemi. JavaFX ile gelişt
 - 👥 **Kullanıcı Yönetimi**:
   - Kullanıcı ekleme
   - Kullanıcı listeleme
-- 🎨 **Modern UI**: JavaFX ile geliştirilmiş kullanıcı dostu arayüz
+- 🎨 **Modern UI**: Java Swing ile geliştirilmiş kullanıcı dostu arayüz
 - 💾 **Veritabanı Entegrasyonu**: PostgreSQL ile güvenli veri saklama
 
 ## Gereksinimler
 
-- Java JDK 11 veya üzeri (JDK 22 önerilir)
+- Java JDK 8 veya üzeri (JDK 22 önerilir)
 - PostgreSQL veritabanı
-- JavaFX SDK (JDK 11+ ile birlikte gelir, JDK 17+ için ayrı indirme gerekebilir)
 - PostgreSQL JDBC Driver (postgresql-42.7.8.jar projede mevcut)
 
 ## Kurulum
@@ -89,18 +88,23 @@ INSERT INTO admin (adminid, adsoyad, sifre) VALUES (1, 'Melisa', '1234');
 ### IntelliJ IDEA ile
 
 1. Projeyi IntelliJ IDEA'da açın
-2. `src/LibraryApp.java` dosyasını ana sınıf olarak ayarlayın
-3. JavaFX modülünü projeye ekleyin (gerekirse)
-4. Projeyi çalıştırın
+2. `src/LibraryApp.java` veya `src/Main.java` dosyasını ana sınıf olarak ayarlayın
+3. Projeyi çalıştırın
 
 ### Komut Satırı ile
 
 ```bash
 # Projeyi derleyin
-javac --module-path /path/to/javafx/lib --add-modules javafx.controls,javafx.fxml -cp postgresql-42.7.8.jar src/*.java
+javac -cp postgresql-42.7.8.jar src/*.java -d out
 
 # Uygulamayı çalıştırın
-java --module-path /path/to/javafx/lib --add-modules javafx.controls,javafx.fxml -cp ".:postgresql-42.7.8.jar" LibraryApp
+java -cp "out:postgresql-42.7.8.jar" LibraryApp
+```
+
+Windows için:
+```cmd
+javac -cp postgresql-42.7.8.jar src\*.java -d out
+java -cp "out;postgresql-42.7.8.jar" LibraryApp
 ```
 
 ## Kullanım
@@ -143,7 +147,7 @@ LibrarySystem/
 ## Teknolojiler
 
 - **Java**: Programlama dili
-- **JavaFX**: Grafik kullanıcı arayüzü
+- **Java Swing**: Grafik kullanıcı arayüzü (GUI)
 - **PostgreSQL**: İlişkisel veritabanı yönetim sistemi
 - **JDBC**: Veritabanı bağlantısı
 
@@ -151,7 +155,8 @@ LibrarySystem/
 
 - Veritabanı bağlantı bilgileri `DBConnection.java` dosyasında merkezi olarak yönetilmektedir
 - Tüm veritabanı işlemleri PreparedStatement kullanılarak SQL injection saldırılarına karşı korunmaktadır
-- UI tasarımı modern ve kullanıcı dostu olacak şekilde tasarlanmıştır
+- UI tasarımı Swing ile modern ve kullanıcı dostu olacak şekilde tasarlanmıştır
+- Swing, Java'nın standart GUI kütüphanesidir ve ek bağımlılık gerektirmez
 
 ## Lisans
 
