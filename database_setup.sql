@@ -1,10 +1,14 @@
 -- Kütüphane Yönetim Sistemi Veritabanı Kurulum Scripti
 
+-- Kullanım: psql -U postgres -f database_setup.sql
+
 -- Veritabanını oluştur
-CREATE DATABASE kutuphaneSistemi;
+-- Ad tırnak içinde yazılır; yoksa PostgreSQL adı küçük harfe çevirir
+-- ve uygulamanın bağlandığı "kutuphaneSistemi" bulunamaz.
+CREATE DATABASE "kutuphaneSistemi";
 
 -- Veritabanına bağlan
-\c kutuphaneSistemi;
+\c "kutuphaneSistemi"
 
 -- Admin Tablosu
 CREATE TABLE IF NOT EXISTS admin (
